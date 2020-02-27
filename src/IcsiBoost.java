@@ -486,7 +486,9 @@ class IcsiBoost {
             String line;
             while(null != (line = reader.readLine())) {
                 Example example = decoder.decode(line);
+		System.out.print(example + " ");
 		System.out.println(example.results());
+
             }
         } catch (IOException e) {
             e.printStackTrace();
