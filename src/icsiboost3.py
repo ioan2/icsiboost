@@ -127,7 +127,7 @@ class Classifier:
 
     def compute_posteriors(self, example):
         scores = self.compute_scores(example)
-        #print "eeeee", len(self.features), scores
+        #print("eeeee", len(self.features), scores, file=sys.stderr)
         return [1.0 / (1.0 + math.exp(-2.0 * x * len(self.features))) for x in scores]
 
     def classify(self, example):
@@ -150,25 +150,70 @@ def generate_ngram(words, n):
             output.append('#'.join(current))
     return output
 
-if __name__ == '__main__':
-    if len(sys.argv) < 2:
-        sys.stderr.write('USAGE: %s <stem>\n' % sys.argv[0])
-        sys.exit(1)
-    classifier = Classifier(sys.argv[1])
-    for line in sys.stdin:
-        #print "zzz", line
-        columns = line.strip().split(",")
-        columns[-1] = re.sub(r'\.$', '', columns[-1].strip())
-        scores = classifier.compute_posteriors([set(generate_ngram(x.split(), 3)) for x in columns])
+
+def infer(classifier, line, silent):
+    columns = line.strip().split(",")
+    columns[-1] = re.sub(r'\.$', '', columns[-1].strip())
+    scores = classifier.compute_posteriors([set(generate_ngram(x.split(), 3)) for x in columns])
+
+    if not silent:
         for i in range(len(classifier.classes)):
             if i != 0:  sys.stdout.write(' ')
             if columns[-1] == classifier.classes[i]:
-                sys.stdout.write('1')
+                #sys.stdout.write('1')
+                print(1, end=" ")
             else:
-                sys.stdout.write('0')
+                #sys.stdout.write('0')
+                print(0, end=" ")
 
-        #print " ".join([str(x) for x in scores])
-        for x in scores:
-            sys.stdout.write(" %.12f" % x)
-        print("")
+    #print " ".join([str(x) for x in scores])
+    #print("aaa", len(classifier.classes), len(scores))
+    maxval = 0
+    maxpos = -1
+    for ix,x in enumerate(scores):
+        if not silent:
+            #sys.stdout.write(" %.12f" % x)
+            print("%.12f" % x, end=" ")
+        if x > maxval:
+            maxval = x
+            maxpos = ix
+    if not silent:
+        print()
+        print(classifier.classes[maxpos])
+    if classifier.classes[maxpos] == columns[-1]:
+        return True
+    return False
 
+if __name__ == '__main__':
+    import argparse
+
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("--stem", "-S", required=True, help="shyp file stem")
+    parser.add_argument("--test", "-t", help="file to test model (same format as train.txt)")
+    parser.add_argument("--silent", "-s", default=False, action="store_true", help='do not show scores')
+
+    if len(sys.argv) < 2:
+        parser.print_help()
+    else:
+        args = parser.parse_args()
+
+        classifier = Classifier(args.stem)
+        ctall = 0
+        ctok = 0
+        if args.test:
+            ifp = open(args.test)
+            for line in ifp:
+                #print(line)
+                ctall += 1
+                if infer(classifier, line, args.silent):
+                    ctok += 1
+            print("correct: %d, total: %d (%.2f%%)" % (ctok, ctall, 100*ctok/ctall))
+        else:
+            import readline
+            while True:
+                line = input("column1[,...],goldlabel> ")
+                if not line:
+                    break
+                rtc = infer(classifier, line, False)
+                print(rtc)

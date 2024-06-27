@@ -134,3 +134,9 @@ Missing
 
 Here is a picture from google analytics of the distribution of traffic sources that come to this website (as of Feb 2010):
 ![](http://icsiboost.googlecode.com/files/icsiboost_traffic_sources.png)
+
+How to Use
+----------
+
+  * [How to use icsiboost](HOWTO.md)
+
