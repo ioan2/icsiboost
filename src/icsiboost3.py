@@ -208,6 +208,8 @@ if __name__ == '__main__':
                 ctall += 1
                 if infer(classifier, line, args.silent):
                     ctok += 1
+                if not args.silent:
+                    print("correct: %d, total: %d (%.2f%%)" % (ctok, ctall, 100*ctok/ctall))
             print("correct: %d, total: %d (%.2f%%)" % (ctok, ctall, 100*ctok/ctall))
         else:
             import readline

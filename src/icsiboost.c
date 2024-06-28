@@ -3050,7 +3050,7 @@ int main(int argc, char** argv)
 			//theoretical_error*=classifier->objective;
 			theoretical_error=NAN;
 			//if (display_maxclass_error) fprintf(stdout,"rnd %d: wh-err= %f th-err= %f dev= %f test= %f train= %f mc-dev= %f mc-test= %f\n",iteration+1,classifier->objective,theoretical_error,dev_error,test_error,error,dev_error_monoclass,test_error_monoclass);
-			fprintf(stdout,"rnd %d: wh-err= %f th-err= %f dev= %f test= %f train= %f\n",iteration+1,classifier->objective,theoretical_error,dev_error,test_error,error);
+			fprintf(stdout,"rnd %d: wh-err= %f th-err= %f dev-err= %f test-err= %f train-err= %f\n",iteration+1,classifier->objective,theoretical_error,dev_error,test_error,error);
 		}
 	}
 	for(;iteration<maximum_iterations;iteration++)
