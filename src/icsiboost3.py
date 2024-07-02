@@ -62,14 +62,18 @@ class Classifier:
         num_classifiers = None
         feature = None
         line_num = 0
+        re_sgram = re.compile(r'^\s*(\S+)\s+Text:SGRAM:([^:]+):(.*?) *$')
+        re_threshold = re.compile(r'^\s*(\S+)\s+Text:THRESHOLD:([^:]+):')
         for line in open(shyp_file):
             line_num += 1
             line = line.strip()
             if line == "":
                 continue
             tokens = line.split()
-            found_sgram = re.search(r'^\s*(\S+)\s+Text:SGRAM:([^:]+):(.*?) *$', line)
-            found_threshold = re.search(r'^\s*(\S+)\s+Text:THRESHOLD:([^:]+):', line)
+            #found_sgram = re.search(r'^\s*(\S+)\s+Text:SGRAM:([^:]+):(.*?) *$', line)
+            found_sgram = re_sgram.search(line)
+            #found_threshold = re.search(r'^\s*(\S+)\s+Text:THRESHOLD:([^:]+):', line)
+            found_threshold = re_threshold.search(line)
             if num_classifiers == None:
                 num_classifiers = int(line)
             elif found_sgram:
@@ -151,9 +155,12 @@ def generate_ngram(words, n):
     return output
 
 
+re_cut_dot = re.compile(r'\.$')
+
 def infer(classifier, line, silent):
     columns = line.strip().split(",")
-    columns[-1] = re.sub(r'\.$', '', columns[-1].strip())
+    #columns[-1] = re.sub(r'\.$', '', columns[-1].strip())
+    columns[-1] = re_cut_dot.sub("", columns[-1].strip())
     scores = classifier.compute_posteriors([set(generate_ngram(x.split(), 3)) for x in columns])
 
     if not silent:
@@ -203,14 +210,19 @@ if __name__ == '__main__':
         ctok = 0
         if args.test:
             ifp = open(args.test)
-            for line in ifp:
+            for ln,line in enumerate(ifp, 1):
                 #print(line)
                 ctall += 1
                 if infer(classifier, line, args.silent):
                     ctok += 1
                 if not args.silent:
-                    print("correct: %d, total: %d (%.2f%%)" % (ctok, ctall, 100*ctok/ctall))
-            print("correct: %d, total: %d (%.2f%%)" % (ctok, ctall, 100*ctok/ctall))
+                    print("correct: %d, total: %d (acc: %.2f%%)" % (ctok, ctall, 100*ctok/ctall))
+                else:
+                    if ln % 100 == 0:
+                        print("%5d acc:%.2f%%" % (ln, 100*ctok/ctall), end="\r", file=sys.stderr)
+            
+                    
+            print("correct: %d, total: %d (acc: %.2f%%)" % (ctok, ctall, 100*ctok/ctall))
         else:
             import readline
             while True:
