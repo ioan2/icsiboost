@@ -134,10 +134,10 @@ int file_writelines(const char* filename, array_t* lines)
 #ifdef HAVE_LIBZ
 array_t* file_gz_readlines(const char* filename)
 {
-	gzFile* file_pointer=NULL;
-	if(strcmp(filename,"-")==0) file_pointer=gzdopen(0,"r");
+	gzFile file_pointer=NULL;
+	if (strcmp(filename,"-")==0) file_pointer=gzdopen(0,"r");
 	else file_pointer=gzopen(filename,"r");
-	if(file_pointer==NULL)
+	if (file_pointer==NULL)
 	{
 		warn("file_readlines(\"%s\") failed", filename);
 		return NULL;

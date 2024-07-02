@@ -1791,9 +1791,9 @@ void save_model(vector_t* classifiers, vector_t* classes, char* filename, int pa
 		{
 		    fprintf(output,"THRESHOLD:%s:\n\n",classifier->template->name->data);
 		    int l=0;
-		    for(l=0;l<classes->length;l++) fprintf(output,"%.10f ",classifier->c0[l]/classifier->alpha); fprintf(output,"\n\n");
-		    for(l=0;l<classes->length;l++) fprintf(output,"%.10f ",classifier->c1[l]/classifier->alpha); fprintf(output,"\n\n");
-		    for(l=0;l<classes->length;l++) fprintf(output,"%.10f ",classifier->c2[l]/classifier->alpha); fprintf(output,"\n\n");
+		    for(l=0;l<classes->length;l++) {fprintf(output,"%.10f ",classifier->c0[l]/classifier->alpha); fprintf(output,"\n\n");}
+		    for(l=0;l<classes->length;l++) {fprintf(output,"%.10f ",classifier->c1[l]/classifier->alpha); fprintf(output,"\n\n");}
+		    for(l=0;l<classes->length;l++) {fprintf(output,"%.10f ",classifier->c2[l]/classifier->alpha); fprintf(output,"\n\n");}
 		    fprintf(output,"%.10f\n\n\n",classifier->threshold);
 		}
 	    else if(classifier->type==CLASSIFIER_TYPE_TEXT && classifier->template->type==FEATURE_TYPE_TEXT)
@@ -1801,8 +1801,8 @@ void save_model(vector_t* classifiers, vector_t* classes, char* filename, int pa
 		    tokeninfo_t* tokeninfo=(tokeninfo_t*) vector_get(classifier->template->tokens,classifier->token);
 		    fprintf(output,"SGRAM:%s:%s\n\n",classifier->template->name->data,tokeninfo->key);
 		    int l=0;
-		    for(l=0;l<classes->length;l++) fprintf(output,"%.10f ",classifier->c1[l]/classifier->alpha); fprintf(output,"\n\n");
-		    for(l=0;l<classes->length;l++) fprintf(output,"%.10f ",classifier->c2[l]/classifier->alpha); fprintf(output,"\n\n");
+		    for(l=0;l<classes->length;l++) {fprintf(output,"%.10f ",classifier->c1[l]/classifier->alpha); fprintf(output,"\n\n");}
+		    for(l=0;l<classes->length;l++) {fprintf(output,"%.10f ",classifier->c2[l]/classifier->alpha); fprintf(output,"\n\n");}
 		    fprintf(output,"\n");
 		}
 	    else if(classifier->type==CLASSIFIER_TYPE_TEXT && classifier->template->type==FEATURE_TYPE_SET)
@@ -1810,8 +1810,8 @@ void save_model(vector_t* classifiers, vector_t* classes, char* filename, int pa
 		    tokeninfo_t* tokeninfo=(tokeninfo_t*) vector_get(classifier->template->tokens,classifier->token);
 		    fprintf(output,"SGRAM:%s:%d\n\n",classifier->template->name->data,tokeninfo->id-1); // 0 is unknown (?), so skip it
 		    int l=0;
-		    for(l=0;l<classes->length;l++) fprintf(output,"%.10f ",classifier->c1[l]/classifier->alpha); fprintf(output,"\n\n");
-		    for(l=0;l<classes->length;l++) fprintf(output,"%.10f ",classifier->c2[l]/classifier->alpha); fprintf(output,"\n\n");
+		    for(l=0;l<classes->length;l++) {fprintf(output,"%.10f ",classifier->c1[l]/classifier->alpha); fprintf(output,"\n\n");}
+		    for(l=0;l<classes->length;l++) {fprintf(output,"%.10f ",classifier->c2[l]/classifier->alpha); fprintf(output,"\n\n");}
 		    fprintf(output,"\n");
 		}
 	    else die("unknown classifier type \"%d\"",classifier->type);
@@ -2168,10 +2168,9 @@ int main(int argc, char** argv)
 		    string_free(arg);
 		    arg=array_shift(args);
 		    text_expert_length=string_to_int32(arg);
-		    if(!text_expert_length>0)
-			{
-			    die("invalid window length \"%s\"",arg->data);
-			}
+		    if (text_expert_length <= 0) {
+			die("invalid window length \"%s\"",arg->data);
+		    }
 		}
 	    else if(string_eq_cstr(arg, "--sequence"))
 		{
@@ -2257,8 +2256,7 @@ int main(int argc, char** argv)
 				    }
 			    } else if(string_eq_cstr(option_name, "expert_length")) {
 				template->text_expert_length=string_to_int32(option_value);
-				if(!template->text_expert_length>0)
-				    {
+				if(template->text_expert_length <= 0) {
 					die("invalid expert length \"%s\", line %d in %s", option->data, line_num+1, names_filename->data);
 				    }
 			    } else if(string_eq_cstr(option_name, "cutoff")) {

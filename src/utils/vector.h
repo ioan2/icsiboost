@@ -24,8 +24,8 @@ void* _vector_shift(vector_t* v);
 void _vector_unshift(vector_t* v, void* value);
 size_t _vector_search(vector_t* v, void* value);
 size_t _vector_search_sorted(vector_t* v, void* value, int (*comparator)(const void*,const void*));
-inline void* _vector_get(vector_t* v, size_t index);
-inline void _vector_set(vector_t* v, size_t index, void* value);
+/*inline*/ void* _vector_get(vector_t* v, size_t index);
+/*inline*/ void _vector_set(vector_t* v, size_t index, void* value);
 void _vector_insert_element(vector_t* v, int index, void* value);
 
 #define vector_declare_functions_for_type(type,null_value) \
@@ -82,8 +82,8 @@ void* vector_shift(vector_t* v);
 void vector_unshift(vector_t* v, void* value);
 size_t vector_search(vector_t* v, void* value);
 size_t vector_search_sorted(vector_t* v, void* value, int (*comparator)(const void*,const void*));
-inline void* vector_get(vector_t* v, size_t index);
-inline void vector_set(vector_t* v, size_t index, void* value);
+/*inline*/ void* vector_get(vector_t* v, size_t index);
+/*inline*/ void vector_set(vector_t* v, size_t index, void* value);
 void vector_insert_element(vector_t* v, int index, void* value);
 
 // generic vector functions

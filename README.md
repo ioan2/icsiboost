@@ -41,7 +41,8 @@ git clone https://github.com/benob/icsiboost.git
 cd icsiboost
 autoreconf
 automake -a
-./configure CFLAGS=-O3
+./configure CFLAGS="-O3 -Wno-unused-result"
+cd src
 make
 ```
 
