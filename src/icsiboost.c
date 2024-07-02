@@ -39,6 +39,7 @@
 #include <string.h>
 #include <math.h>
 #include <time.h>
+#include <sys/time.h>
 #include <unistd.h>
 #include <float.h>
 
@@ -3094,9 +3095,12 @@ int main(int argc, char** argv)
 		    //theoretical_error*=classifier->objective;
 		    theoretical_error=NAN;
 		    //if (display_maxclass_error) fprintf(stdout,"rnd %d: wh-err= %f th-err= %f dev= %f test= %f train= %f mc-dev= %f mc-test= %f\n",iteration+1,classifier->objective,theoretical_error,dev_error,test_error,error,dev_error_monoclass,test_error_monoclass);
-		    fprintf(stdout,"rnd %d: wh-err= %f th-err= %f dev-err= %f test-err= %f train-err= %f\n",iteration+1,classifier->objective,theoretical_error,dev_error,test_error,error);
+		    fprintf(stdout,"rnd %5d: wh-err= %f th-err= %f dev-err= %f test-err= %f train-err= %f\n",iteration+1,classifier->objective,theoretical_error,dev_error,test_error,error);
 		}
 	}
+    //time_t starttime = time(NULL);
+    struct timespec starttime;
+    clock_gettime(CLOCK_MONOTONIC_RAW, &starttime);
     for(;iteration<maximum_iterations;iteration++)
 	{
 #ifdef USE_THREADS
@@ -3110,6 +3114,11 @@ int main(int argc, char** argv)
 	    double min_objective=1.0;
 #endif
 	    weakclassifier_t* classifier=NULL;
+
+	    //time_t iteration_time = time(NULL);
+	    struct timespec iteration_time;
+	    clock_gettime(CLOCK_MONOTONIC_RAW, &iteration_time);
+
 #ifdef USE_THREADS
 	    for(i=0;i<templates->length;i++) // find the best classifier
 		{
@@ -3250,8 +3259,31 @@ int main(int argc, char** argv)
 	      }
 	      else*/
 	    {
-		if(use_max_fmeasure) fprintf(stdout,"rnd %d: wh-err= %f th-err= %f dev= %f (R=%.3f, P=%.3f) test= %f (R=%.3f, P=%.3f) train= %f (R=%.3f, P=%.3f)\n",iteration+1,classifier->objective,theoretical_error,dev_error,dev_recall, dev_precision, test_error, test_recall, test_precision, error, train_recall, train_precision);
-		else fprintf(stdout,"rnd %d: wh-err= %f th-err= %f dev= %f test= %f train= %f\n",iteration+1,classifier->objective,theoretical_error,dev_error,test_error,error);
+		//time_t now = time(NULL);
+		//time_t duration_total = now - starttime;
+		//time_t duration_iteration = now - iteration_time;
+
+		struct timespec now;
+		clock_gettime(CLOCK_MONOTONIC_RAW, &now);
+		uint64_t delta_it = (now.tv_sec - iteration_time.tv_sec) * 1000000 + (now.tv_nsec - iteration_time.tv_nsec) / 1000;
+		uint64_t delta_total = (now.tv_sec - starttime.tv_sec) * 1000000 + (now.tv_nsec - starttime.tv_nsec) / 1000;
+
+		float duration_iteration = delta_it/1000000.0;
+		float duration_total = delta_total/1000000.0;
+
+		double ETA = (maximum_iterations-(iteration+1))*duration_total/(iteration+1);
+		char *unit = "sec";
+		if (ETA > 3600 ) {
+		    ETA /= 3600;
+		    unit="hours";
+		}
+		if (ETA > 120 ) {
+		    ETA /= 60;
+		    unit="min";
+		}
+		iteration_time = now;
+		if(use_max_fmeasure) fprintf(stdout,"rnd %d: wh-err= %f th-err= %f dev-err= %f (R=%.3f, P=%.3f) test-err= %f (R=%.3f, P=%.3f) train-err= %f (R=%.3f, P=%.3f)\n",iteration+1, classifier->objective,theoretical_error,dev_error,dev_recall, dev_precision, test_error, test_recall, test_precision, error, train_recall, train_precision);
+		else fprintf(stdout,"rnd %d: it-time= %.2fsec total-time= %.2fsec ETA= %.1f%s wh-err= %f th-err= %f dev-err= %f test-err= %f train-err= %f\n",iteration+1, duration_iteration, duration_total, ETA, unit, classifier->objective,theoretical_error,dev_error,test_error,error);
 	    }
 	    if(save_model_at_each_iteration) save_model(classifiers, classes, model_name->data, 0, 0);
 	    fflush(stdout);
