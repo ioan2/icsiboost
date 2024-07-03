@@ -27,9 +27,9 @@ mapped_t* mapped_new(const char* filename,size_t length)
 	}
 	lseek(m->fd,length-1,SEEK_SET);
 	int c=0;
-	write(m->fd,&c,1);
+	size_t rtc = write(m->fd,&c,1);
 	m->data=mmap(NULL,length,PROT_READ|PROT_WRITE,MAP_SHARED,m->fd,0L);
-	if(m->data==MAP_FAILED)
+	if(m->data==MAP_FAILED || rtc != 1)
 	{
 		warn("mmap(%s,%d)",filename,(int)length);
 		FREE(m);
@@ -50,11 +50,13 @@ void* mapped_resize(mapped_t* m,size_t length)
 		m->data=NULL;
 		return NULL;
 	}
+
 	if(length>m->length)
 	{
 		lseek(m->fd,length-1,SEEK_SET);
 		int c=0;
-		write(m->fd,&c,1);
+		size_t rtc = write(m->fd,&c,1);
+		if (rtc != 1) warn("write() error");
 	}
 	m->data=mmap(m->data,length,PROT_READ|PROT_WRITE,MAP_SHARED,m->fd,0L);
 	if(m->data==MAP_FAILED)
@@ -82,8 +84,9 @@ mapped_t* mapped_load(const char* filename)
 	if(m->length==0)
 	{
 		int c=0;
-		write(m->fd,&c,1);
+		size_t rtc = write(m->fd,&c,1);
 		m->length=1;
+		if (rtc != 1) warn("write() error");
 	}
 	lseek(m->fd,0,SEEK_SET);
 	m->data=mmap(NULL,m->length,PROT_READ|PROT_WRITE,MAP_SHARED,m->fd,0L);

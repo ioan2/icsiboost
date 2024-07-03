@@ -1792,9 +1792,9 @@ void save_model(vector_t* classifiers, vector_t* classes, char* filename, int pa
 		{
 		    fprintf(output,"THRESHOLD:%s:\n\n",classifier->template->name->data);
 		    int l=0;
-		    for(l=0;l<classes->length;l++) {fprintf(output,"%.10f ",classifier->c0[l]/classifier->alpha); fprintf(output,"\n\n");}
-		    for(l=0;l<classes->length;l++) {fprintf(output,"%.10f ",classifier->c1[l]/classifier->alpha); fprintf(output,"\n\n");}
-		    for(l=0;l<classes->length;l++) {fprintf(output,"%.10f ",classifier->c2[l]/classifier->alpha); fprintf(output,"\n\n");}
+		    for(l=0;l<classes->length;l++) {fprintf(output,"%.10f ",classifier->c0[l]/classifier->alpha);} fprintf(output,"\n\n");
+		    for(l=0;l<classes->length;l++) {fprintf(output,"%.10f ",classifier->c1[l]/classifier->alpha);} fprintf(output,"\n\n");
+		    for(l=0;l<classes->length;l++) {fprintf(output,"%.10f ",classifier->c2[l]/classifier->alpha);} fprintf(output,"\n\n");
 		    fprintf(output,"%.10f\n\n\n",classifier->threshold);
 		}
 	    else if(classifier->type==CLASSIFIER_TYPE_TEXT && classifier->template->type==FEATURE_TYPE_TEXT)
@@ -1802,8 +1802,8 @@ void save_model(vector_t* classifiers, vector_t* classes, char* filename, int pa
 		    tokeninfo_t* tokeninfo=(tokeninfo_t*) vector_get(classifier->template->tokens,classifier->token);
 		    fprintf(output,"SGRAM:%s:%s\n\n",classifier->template->name->data,tokeninfo->key);
 		    int l=0;
-		    for(l=0;l<classes->length;l++) {fprintf(output,"%.10f ",classifier->c1[l]/classifier->alpha); fprintf(output,"\n\n");}
-		    for(l=0;l<classes->length;l++) {fprintf(output,"%.10f ",classifier->c2[l]/classifier->alpha); fprintf(output,"\n\n");}
+		    for(l=0;l<classes->length;l++) {fprintf(output,"%.10f ",classifier->c1[l]/classifier->alpha);} fprintf(output,"\n\n");
+		    for(l=0;l<classes->length;l++) {fprintf(output,"%.10f ",classifier->c2[l]/classifier->alpha);} fprintf(output,"\n\n");
 		    fprintf(output,"\n");
 		}
 	    else if(classifier->type==CLASSIFIER_TYPE_TEXT && classifier->template->type==FEATURE_TYPE_SET)
@@ -1811,13 +1811,31 @@ void save_model(vector_t* classifiers, vector_t* classes, char* filename, int pa
 		    tokeninfo_t* tokeninfo=(tokeninfo_t*) vector_get(classifier->template->tokens,classifier->token);
 		    fprintf(output,"SGRAM:%s:%d\n\n",classifier->template->name->data,tokeninfo->id-1); // 0 is unknown (?), so skip it
 		    int l=0;
-		    for(l=0;l<classes->length;l++) {fprintf(output,"%.10f ",classifier->c1[l]/classifier->alpha); fprintf(output,"\n\n");}
-		    for(l=0;l<classes->length;l++) {fprintf(output,"%.10f ",classifier->c2[l]/classifier->alpha); fprintf(output,"\n\n");}
+		    for(l=0;l<classes->length;l++) {fprintf(output,"%.10f ",classifier->c1[l]/classifier->alpha);} fprintf(output,"\n\n");
+		    for(l=0;l<classes->length;l++) {fprintf(output,"%.10f ",classifier->c2[l]/classifier->alpha);} fprintf(output,"\n\n");
 		    fprintf(output,"\n");
 		}
 	    else die("unknown classifier type \"%d\"",classifier->type);
 	}
     fclose(output);
+}
+
+char *formatduration(char *buffer, float seconds) {
+    unsigned int h = seconds/3600;
+    unsigned int m = (seconds-(3600*h))/60;
+    float s = (seconds -(3600*h)-(m*60));
+    if (h > 0) {
+	//sprintf(buffer, "%dh%02dm%05.2fs", h, m, s);
+	sprintf(buffer, "%dh%02dm%02.0fs", h, m, s);
+    }
+    else if (m > 0) {
+	sprintf(buffer, "%dm%02.0fs", m, s);
+    }
+    else {
+	sprintf(buffer, "%.2fs", s);
+    }
+
+    return buffer;
 }
 
 void usage(char* program_name)
@@ -3272,18 +3290,22 @@ int main(int argc, char** argv)
 		float duration_total = delta_total/1000000.0;
 
 		double ETA = (maximum_iterations-(iteration+1))*duration_total/(iteration+1);
-		char *unit = "sec";
-		if (ETA > 3600 ) {
-		    ETA /= 3600;
-		    unit="hours";
-		}
-		if (ETA > 120 ) {
-		    ETA /= 60;
-		    unit="min";
-		}
+		char totalbuffer[32];
+		char itbuffer[32];
+		char etabuffer[32];
+
 		iteration_time = now;
-		if(use_max_fmeasure) fprintf(stdout,"rnd %d: wh-err= %f th-err= %f dev-err= %f (R=%.3f, P=%.3f) test-err= %f (R=%.3f, P=%.3f) train-err= %f (R=%.3f, P=%.3f)\n",iteration+1, classifier->objective,theoretical_error,dev_error,dev_recall, dev_precision, test_error, test_recall, test_precision, error, train_recall, train_precision);
-		else fprintf(stdout,"rnd %d: it-time= %.2fsec total-time= %.2fsec ETA= %.1f%s wh-err= %f th-err= %f dev-err= %f test-err= %f train-err= %f\n",iteration+1, duration_iteration, duration_total, ETA, unit, classifier->objective,theoretical_error,dev_error,test_error,error);
+		if(use_max_fmeasure) {
+		    fprintf(stdout,"rnd %d: wh-err= %f th-err= %f dev-err= %f (R=%.3f, P=%.3f) test-err= %f (R=%.3f, P=%.3f) train-err= %f (R=%.3f, P=%.3f)\n",iteration+1, classifier->objective,theoretical_error,dev_error,dev_recall, dev_precision, test_error, test_recall, test_precision, error, train_recall, train_precision);
+		} else {
+		    //fprintf(stdout,"rnd %d: it-time= %.2fsec total-time= %.2fsec ETA= %.1f%s wh-err= %f th-err= %f dev-err= %f test-err= %f train-err= %f\n",iteration+1, duration_iteration, duration_total, ETA, unit, classifier->objective,theoretical_error,dev_error,test_error,error);
+		    fprintf(stdout,"rnd %d: it-time= %s total-time= %s ETA= %s wh-err= %f th-err= %f dev-err= %f test-err= %f train-err= %f\n",
+			    iteration+1,
+			    formatduration(itbuffer, duration_iteration),
+			    formatduration(totalbuffer, duration_total),
+			    formatduration(etabuffer, ETA),
+			    classifier->objective,theoretical_error,dev_error,test_error,error);
+		}
 	    }
 	    if(save_model_at_each_iteration) save_model(classifiers, classes, model_name->data, 0, 0);
 	    fflush(stdout);

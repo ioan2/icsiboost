@@ -38,8 +38,9 @@ void _sigsegv_handler(int id)
 			close(0);
 			dup2(filedes[0],0);
 			char* commands="set prompt\ncontinue\nwhere\nquit\ny\n";
-			write(filedes[1],commands,strlen(commands));
+			size_t rtc = write(filedes[1],commands,strlen(commands));
 			//				close(filedes[1]);
+			if (rtc == 0) warn("write() error");
 		}
 		dup2(2,1);
 		char pid[1024];

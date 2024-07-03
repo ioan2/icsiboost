@@ -262,26 +262,26 @@ off_t hashtable_get_from_file(FILE* file,const void* key,size_t key_length)
 	int size;
 	off_t begining=ftello(file);
 	int magic=-1;
-	fread(&magic,sizeof(int),1,file);
-	if(magic!=HASHTABLE_MAGIC)
+	size_t rtc = fread(&magic,sizeof(int),1,file);
+	if(magic!=HASHTABLE_MAGIC || rtc != 1)
 	{
 		warn("bad magic %d!=%d",magic,HASHTABLE_MAGIC);
 		return (off_t)-1;
 	}
-	fread(&size,sizeof(int),1,file);
+	rtc = fread(&size,sizeof(int),1,file);
 	uint32_t bucket=_hashtable_function(key,key_length)%size;
 	off_t bucketLocation=-1;
 	int bucketLength=-1,bucketSize=-1;
 	fseeko(file,(off_t)(bucket*(sizeof(int)*2+sizeof(off_t))),SEEK_CUR);
-	fread(&bucketLocation,sizeof(off_t),1,file);
-	fread(&bucketLength,sizeof(int),1,file);
-	fread(&bucketSize,sizeof(int),1,file);
+	rtc = fread(&bucketLocation,sizeof(off_t),1,file);
+	rtc = fread(&bucketLength,sizeof(int),1,file);
+	rtc = fread(&bucketSize,sizeof(int),1,file);
 	//warn("bucket=%d location=%lld length=%d size=%d",bucket,bucketLocation,bucketLength,bucketSize);
 	if(bucketLength!=0)
 	{
 		fseeko(file,bucketLocation,SEEK_SET);
 		char buffer[bucketSize];
-		fread(buffer,bucketSize,1,file);
+		rtc = fread(buffer,bucketSize,1,file);
 		char* ptr=buffer;
 		for(j=0;j<bucketLength;j++)
 		{
@@ -486,22 +486,22 @@ hashtable_t* hashtable_load(FILE* file, void* (*loadValue)(const void* key,size_
 	int i,j;
 	size_t size;
 	int magic=-1;
-	fread(&magic,sizeof(int),1,file);
-	if(magic!=HASHTABLE_MAGIC)
+	size_t rtc = fread(&magic,sizeof(int),1,file);
+	if(magic!=HASHTABLE_MAGIC || rtc != 1)
 	{
 		warn("bad magic %d!=%d",magic,HASHTABLE_MAGIC);
 		return NULL;
 	}
-	fread(&size,sizeof(size_t),1,file);
+	rtc = fread(&size,sizeof(size_t),1,file);
 	hashtable_t* h=hashtable_new_size(size);
 	off_t bucketLocation[size];
 	size_t bucketLength[size];
 	size_t bucketSize[size];
 	for(i=0;i<h->size;i++)
 	{
-		fread(&bucketLocation[i],sizeof(off_t),1,file);
-		fread(&bucketLength[i],sizeof(size_t),1,file);
-		fread(&bucketSize[i],sizeof(size_t),1,file);
+		rtc = fread(&bucketLocation[i],sizeof(off_t),1,file);
+		rtc = fread(&bucketLength[i],sizeof(size_t),1,file);
+		rtc = fread(&bucketSize[i],sizeof(size_t),1,file);
 	}
 	for(i=0;i<h->size;i++)
 	{
@@ -510,7 +510,7 @@ hashtable_t* hashtable_load(FILE* file, void* (*loadValue)(const void* key,size_
 		{
 			fseeko(file,bucketLocation[i],SEEK_SET);
 			char buffer[bucketSize[i]];
-			fread(buffer,bucketSize[i],1,file);
+			rtc = fread(buffer,bucketSize[i],1,file);
 			char* ptr=buffer;
 			for(j=0;j<bucketLength[i];j++)
 			{
