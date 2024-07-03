@@ -75,9 +75,38 @@ src/icsiboost -n 500 -S rules --names rules.names --train rules.txt --model rule
 
 ## test the model
 
+* using the python script `src/icsiboost3.py`:
+
 ```
 src/icsiboost3.py -S rules -t rules.test [-s]
 ```
 
+This outputs something like for a test line of `9306,ConjSubj1,fr_sequoia,nsubj:enh,NOUN,_,nsubj:pass,VERB,root,5,7,INCORRECT` (taken from example 1)
+
+```
+0 1 0.240891801026 0.759108198974
+INCORRECT
+correct: 97, total: 101 (acc: 96.04%)
+```
+
+If you provide a gold solution, the first half of thefirst output line will show the the position of the gold result (here the second label, `INCORRECT`) The second half shows the scores for each label (the sum equals 1).
+The second line shows the result, the third line sums the nbumber of correctly predicted lines, the total number of lines processed and teh current accuracy.
+
+
+* using `src/icsiboost` (written in C, much faster):
+
+```
+src/icsiboost -S rules -C --posteriors --show_correct [--silent] < rules.test
+```
+
+without the option `--show_correct`, `icsiboost` only outputs the first line, you have to find the correct solution in finding the highest score:
+
+
+
+```
+0 1 0.240891801026 0.759108198974
+```
+
 
 For more info see the doc of the original Icsiboost
+
