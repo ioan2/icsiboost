@@ -23,9 +23,18 @@ INCLUDES=-Wall -Werror-implicit-function-declaration -L/opt/local/lib
 utils = utils/vector.c utils/string.c utils/hashtable.c utils/array.c utils/mapped.c utils/threads.c utils/debug.c utils/file.c utils/common.c
 utils += utils/vector.h utils/string.h utils/hashtable.h utils/array.h utils/mapped.h utils/threads.h utils/debug.h utils/file.h utils/common.h
 
+.PHONY: gitinfo.h
+
+
+gitinfo.h: FORCE
+	$(shell git log -1 --pretty=format:'#define GITHASH "%H"%n#define GITDATE "%cd"%n' --date=format:'%Y.%m.%d %H:%M' > gitinfo.h)
+	$(shell git remote -v | grep origin | head -1 | awk '{printf("#define GITREMOTE \"%s\"\n", $$2)}' >> gitinfo.h)
+
+FORCE:
+
 bin_PROGRAMS = icsiboost
 check_PROGRAMS = utils_test test_api
-icsiboost_SOURCES = icsiboost.c $(utils)
+icsiboost_SOURCES = icsiboost.c $(utils) gitinfo.h
 test_api_SOURCES = test_api.cc IcsiBoost.cc
 #icsiboost_LDADD  = -lm -lpthread -lz -lpcre
 #perceptron_SOURCES = perceptron.c $(utils) $(classifier)
@@ -34,3 +43,4 @@ utils_test_SOURCES = utils_test.c $(utils)
 #utils_test_LDADD  = -lm -lz -lpcre
 
 EXTRA_DIST = test_uci.sh
+

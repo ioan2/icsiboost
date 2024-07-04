@@ -58,6 +58,7 @@ class Classifier:
                 name = re.split(r':', line)[0]
                 self.names[name] = len(self.names)
         #print "NAMES", self.names
+
     def read_shyp(self, shyp_file):
         num_classifiers = None
         feature = None
@@ -67,7 +68,7 @@ class Classifier:
         for line in open(shyp_file):
             line_num += 1
             line = line.strip()
-            if line == "":
+            if not line or line[0] == "#":
                 continue
             tokens = line.split()
             #found_sgram = re.search(r'^\s*(\S+)\s+Text:SGRAM:([^:]+):(.*?) *$', line)

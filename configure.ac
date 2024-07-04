@@ -16,7 +16,7 @@
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 AC_PREREQ([2.71])
-AC_INIT([icsiboost],[0.3c],[favre@icsi.berkeley.edu])
+AC_INIT([icsiboost],[0.4],[favre@icsi.berkeley.edu])
 #AC_CONFIG_SRCDIR([src/icsiboost.c])
 AM_INIT_AUTOMAKE()
 AC_CONFIG_HEADERS([config.h])

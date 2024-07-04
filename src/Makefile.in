@@ -323,7 +323,7 @@ utils = utils/vector.c utils/string.c utils/hashtable.c utils/array.c \
 	utils/common.c utils/vector.h utils/string.h utils/hashtable.h \
 	utils/array.h utils/mapped.h utils/threads.h utils/debug.h \
 	utils/file.h utils/common.h
-icsiboost_SOURCES = icsiboost.c $(utils)
+icsiboost_SOURCES = icsiboost.c $(utils) gitinfo.h
 test_api_SOURCES = test_api.cc IcsiBoost.cc
 #icsiboost_LDADD  = -lm -lpthread -lz -lpcre
 #perceptron_SOURCES = perceptron.c $(utils) $(classifier)
@@ -836,6 +836,14 @@ uninstall-am: uninstall-binPROGRAMS
 
 .PRECIOUS: Makefile
 
+
+.PHONY: gitinfo.h
+
+gitinfo.h: FORCE
+	$(shell git log -1 --pretty=format:'#define GITHASH "%H"%n#define GITDATE "%cd"%n' --date=format:'%d.%m.%Y %H:%M' > gitinfo.h)
+	$(shell git remote -v | grep origin | head -1 | awk '{printf("#define GITREMOTE \"%s\"\n", $$2)}' >> gitinfo.h)
+
+FORCE:
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
